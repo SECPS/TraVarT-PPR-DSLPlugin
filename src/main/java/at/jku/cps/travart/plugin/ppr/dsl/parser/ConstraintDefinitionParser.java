@@ -12,6 +12,7 @@ import de.vill.model.constraint.ImplicationConstraint;
 import de.vill.model.constraint.LiteralConstraint;
 import de.vill.model.constraint.NotConstraint;
 import de.vill.model.constraint.OrConstraint;
+import de.vill.model.constraint.ParenthesisConstraint;
 
 public class ConstraintDefinitionParser {
 
@@ -21,7 +22,10 @@ public class ConstraintDefinitionParser {
 	public static final String OR = "or";
 	public static final String AND = "and";
 	public static final String NOT = "not";
-	private static final String REGEX = "(?<=,)|(?=,)|(?<=->)|(?=->)|((?<= implies )|(?= implies ))|((?<= or )|(?= or ))|((?<= and )|(?= and ))|((?<= not )|(?= not ))";
+	public static final String OPEN_PARENTHESIS = "(";
+	public static final String CLOSE_PARENTHESIS = ")";
+
+	private static final String REGEX = "(?<=,)|(?=,)|(?<=->)|(?=->)|((?<= implies )|(?= implies ))|((?<= or )|(?= or ))|((?<= and )|(?= and ))|((?<= not )|(?= not ))|((?<=\\()|(?=\\)))";
 	private static final String EOF = "EOF";
 	private final FeatureModel fm;
 	private String[] input;
@@ -51,7 +55,8 @@ public class ConstraintDefinitionParser {
 				nextSymbol();
 				continue;
 			}
-			if (symbol.equals(DEFINITION_ARROW) || symbol.equals(IMPLIES) || symbol.equals(OR) || symbol.equals(AND)) {
+			if (DEFINITION_ARROW.equals(symbol) || IMPLIES.equals(symbol) || OR.equals(symbol) || AND.equals(symbol)
+					|| OPEN_PARENTHESIS.equals(symbol) || CLOSE_PARENTHESIS.equals(symbol)) {
 				n = implies();
 			}
 			nextSymbol();
@@ -70,7 +75,7 @@ public class ConstraintDefinitionParser {
 
 	private de.vill.model.constraint.Constraint or() {
 		de.vill.model.constraint.Constraint n = and();
-		while (symbol.equals(OR)) {
+		while (OR.equals(symbol)) {
 			final de.vill.model.constraint.Constraint r = and();
 			n = new OrConstraint(n, r);
 		}
@@ -79,7 +84,7 @@ public class ConstraintDefinitionParser {
 
 	private de.vill.model.constraint.Constraint and() {
 		de.vill.model.constraint.Constraint n = constraint();
-		while (symbol.equals(AND)) {
+		while (AND.equals(symbol)) {
 			final de.vill.model.constraint.Constraint r = constraint();
 			n = new AndConstraint(n, r);
 		}
@@ -89,22 +94,27 @@ public class ConstraintDefinitionParser {
 	private de.vill.model.constraint.Constraint constraint() {
 		nextSymbol();
 		de.vill.model.constraint.Constraint n = null;
-		if (symbol.equals(NOT)) {
+		if (NOT.equals(symbol)) {
 			final de.vill.model.constraint.Constraint v = constraint();
 			n = new NotConstraint(v);
 		} else {
-			final Feature feature = TraVarTUtils.getFeature(fm, symbol);
-			if (feature == null) {
-				// at this point this may means that the product is non-abstract and could
-				// indicate mandatory features. Replace by root feature if the product is not
-				// abstract, otherwise by a null object
-				if (asq.getProducts().get(symbol) == null || asq.getProducts().get(symbol).isAbstract()) {
-					throw new ParserException(new NullPointerException(
-							String.format("feature with identifier %s is not found (null)", symbol)));
-				}
-				n = new LiteralConstraint(TraVarTUtils.getFeatureName(TraVarTUtils.getRoot(fm)));
+			if (OPEN_PARENTHESIS.equals(symbol)) {
+				final de.vill.model.constraint.Constraint v = implies();
+				n = new ParenthesisConstraint(v);
 			} else {
-				n = new LiteralConstraint(TraVarTUtils.getFeatureName(feature));
+				final Feature feature = TraVarTUtils.getFeature(fm, symbol);
+				if (feature == null) {
+					// at this point this may means that the product is non-abstract and could
+					// indicate mandatory features. Replace by root feature if the product is not
+					// abstract, otherwise by a null object
+					if (asq.getProducts().get(symbol) == null || asq.getProducts().get(symbol).isAbstract()) {
+						throw new ParserException(new NullPointerException(
+								String.format("feature with identifier %s is not found (null)", symbol)));
+					}
+					n = new LiteralConstraint(TraVarTUtils.getFeatureName(TraVarTUtils.getRoot(fm)));
+				} else {
+					n = new LiteralConstraint(TraVarTUtils.getFeatureName(feature));
+				}
 			}
 			nextSymbol();
 		}
