@@ -1,8 +1,8 @@
 /*******************************************************************************
  * TODO: explanation what the class does
- *  
+ *
  *  @author Kevin Feichtinger
- *  
+ *
  * Copyright 2023 Johannes Kepler University Linz
  * LIT Cyber-Physical Systems Lab
  * All rights reserved
@@ -134,19 +134,25 @@ public class PprDslToFeatureModelRoundtripTransformer {
 	}
 
 	private void storeCustomAttributesAsProperty(final Feature feature, final NamedObject attribute) {
+		// mandatory
 		feature.getAttributes().put(ATTRIBUTE_ID_KEY_PRAEFIX + attribute.getName(),
 				new Attribute<>(ATTRIBUTE_ID_KEY_PRAEFIX + attribute.getName(), attribute.getName()));
 		feature.getAttributes().put(ATTRIBUTE_DESCRIPTION_KEY_PRAEFIX + attribute.getName(),
 				new Attribute<>(ATTRIBUTE_DESCRIPTION_KEY_PRAEFIX + attribute.getName(), attribute.getDescription()));
-		feature.getAttributes().put(ATTRIBUTE_UNIT_KEY_PRAEFIX + attribute.getName(),
-				new Attribute<>(ATTRIBUTE_UNIT_KEY_PRAEFIX + attribute.getName(), attribute.getUnit()));
 		feature.getAttributes().put(ATTRIBUTE_TYPE_KEY_PRAEFIX + attribute.getName(),
 				new Attribute<>(ATTRIBUTE_TYPE_KEY_PRAEFIX + attribute.getName(), attribute.getType()));
 		feature.getAttributes().put(ATTRIBUTE_DEFAULT_VALUE_KEY_PRAEFIX + attribute.getName(),
 				new Attribute<>(ATTRIBUTE_DEFAULT_VALUE_KEY_PRAEFIX + attribute.getName(),
 						attribute.getDefaultValueObject().toString()));
-		feature.getAttributes().put(ATTRIBUTE_VALUE_KEY_PRAEFIX + attribute.getName(), new Attribute<>(
-				ATTRIBUTE_VALUE_KEY_PRAEFIX + attribute.getName(), attribute.getValueObject().toString()));
+		// optional
+		if (attribute.getUnit() != null) {
+			feature.getAttributes().put(ATTRIBUTE_UNIT_KEY_PRAEFIX + attribute.getName(),
+					new Attribute<>(ATTRIBUTE_UNIT_KEY_PRAEFIX + attribute.getName(), attribute.getUnit()));
+		}
+		if (attribute.getValueObject() != null) {
+			feature.getAttributes().put(ATTRIBUTE_VALUE_KEY_PRAEFIX + attribute.getName(), new Attribute<>(
+					ATTRIBUTE_VALUE_KEY_PRAEFIX + attribute.getName(), attribute.getValueObject().toString()));
+		}
 	}
 
 	private void storeImplementedProductsAsProperties(final Feature feature, final List<Product> implementedProducts) {
