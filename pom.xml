@@ -126,7 +126,7 @@
         <repository>
         	<id>cdl-sqi</id>
         	<name>CLD-SQI Artifactory-releases</name>
-        	<url>http://cdl-sqi.ifs.tuwien.ac.at/artifactory/libs-release</url>
+        	<url>https://cdl-sqi.ifs.tuwien.ac.at/artifactory/libs-release</url>
     	</repository>
     </repositories>
 </project>
