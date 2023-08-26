@@ -130,7 +130,9 @@ public class PprDslToFeatureModelRoundtripTransformer {
 	}
 
 	private void storeNameAttributeAsProperty(final Feature feature, final String name) {
-		feature.getAttributes().put(NAME_ATTRIBUTE_KEY, new Attribute<>(NAME_ATTRIBUTE_KEY, name));
+		if (name != null) {
+			feature.getAttributes().put(NAME_ATTRIBUTE_KEY, new Attribute<>(NAME_ATTRIBUTE_KEY, name));
+		}
 	}
 
 	private void storeCustomAttributesAsProperty(final Feature feature, final NamedObject attribute) {
